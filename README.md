@@ -72,12 +72,11 @@ python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1
 
 ### 3. **Read Operations**
 - Multiple threads perform `GET` operations on the populated keys.
-- Measures throughput and latency.
+- Measures throughput
 
 ## Output
 
 - **Throughput**: Operations per second.
-- **Average Latency**: Average time taken per operation.
 
 ## Contributing
 
