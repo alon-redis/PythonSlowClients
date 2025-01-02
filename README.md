@@ -35,6 +35,8 @@ pip install redis
 | `--skip_population`   | Skip the population stage.                                      | False       |
 | `--recv_chunk_size`   | Chunk size for socket `recv` in bytes.                         | 64          |
 | `--recv_sleep_time`   | Sleep time between socket `recv` operations in seconds.        | 1.0         |
+| `--hash_fields`       | Number of fields in the large hash.                            | 1000000     |
+| `--hash_field_size`   | Size of each field value in the large hash in bytes.           | 100         |
 
 ### Example
 
@@ -48,16 +50,21 @@ Skip the population stage:
 python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1000 --connections 10 --slow_connections 2 --skip_population
 ```
 
-Control the slowness of the connections:
+Control slow connection parameters (chunk size and sleep time):
 ```bash
-python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1000 --connections 10 --slow_connections 2 --skip_population --recv_chunk_size 1024 --recv_sleep_time 10
+python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1000 --connections 10 --slow_connections 2 --recv_chunk_size 128 --recv_sleep_time 0.5
+```
+
+Control large hash size:
+```bash
+python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1000 --connections 10 --hash_fields 500000 --hash_field_size 200
 ```
 
 ## Functionality
 
 ### 1. **Population Stage**
 - Populates Redis with the specified number of keys.
-- Creates a large hash (`large-hash`) with 1 million fields and a total size of ~10MB.
+- Creates a large hash (`large-hash`) with a configurable number of fields and field sizes.
 
 ### 2. **Slow Connections**
 - Simulates slow connections using raw sockets.
@@ -70,7 +77,7 @@ python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1
 ## Output
 
 - **Throughput**: Operations per second.
-- **Average Latency**: Average time taken per operation. NOT SURE ABOUT THE ACCURACY OF THIS COUNTER
+- **Average Latency**: Average time taken per operation.
 
 ## Contributing
 
