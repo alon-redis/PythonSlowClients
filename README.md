@@ -48,6 +48,11 @@ Skip the population stage:
 python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1000 --connections 10 --slow_connections 2 --skip_population
 ```
 
+Control the slowness of the connections:
+```bash
+python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1000 --connections 10 --slow_connections 2 --skip_population --recv_chunk_size 1024 --recv_sleep_time 10
+```
+
 ## Functionality
 
 ### 1. **Population Stage**
@@ -65,7 +70,7 @@ python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1
 ## Output
 
 - **Throughput**: Operations per second.
-- **Average Latency**: Average time taken per operation.
+- **Average Latency**: Average time taken per operation. NOT SURE ABOUT THE ACCURACY OF THIS COUNTER
 
 ## Contributing
 
