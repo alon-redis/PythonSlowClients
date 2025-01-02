@@ -19,14 +19,16 @@ def parse_args():
     parser.add_argument('--skip_population', action='store_true', help='Skip the population stage')
     parser.add_argument('--recv_chunk_size', type=int, default=64, help='Chunk size for socket recv in bytes')
     parser.add_argument('--recv_sleep_time', type=float, default=1.0, help='Sleep time between socket recv operations in seconds')
+    parser.add_argument('--hash_fields', type=int, default=1000000, help='Number of fields in the large hash')
+    parser.add_argument('--hash_field_size', type=int, default=100, help='Size of each field value in the large hash in bytes')
     return parser.parse_args()
 
 # Generate random data of specified size
 def generate_data(size):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=size))
 
-def populate_db(pool, keys_count, data_size):
-    """Populate the database with a specified number of keys."""
+def populate_db(pool, keys_count, data_size, hash_fields, hash_field_size):
+    """Populate the database with a specified number of keys and a large hash."""
     client = redis.Redis(connection_pool=pool)
     value = generate_data(data_size)
 
@@ -36,14 +38,14 @@ def populate_db(pool, keys_count, data_size):
 
     print(f"Populated DB with {keys_count} keys.")
 
-    # Add a large hash with 1 million fields and 10MB size
+    # Add a large hash with configurable fields and field size
     hash_key = "large-hash"
-    for i in range(100000):
+    for i in range(hash_fields):
         field = f"field-{i}"
-        field_value = generate_data(100)  # Small field values to total ~10MB
+        field_value = generate_data(hash_field_size)
         client.hset(hash_key, field, field_value)
 
-    print(f"Populated DB with large hash: {hash_key}, containing 1 million fields (~10MB).")
+    print(f"Populated DB with large hash: {hash_key}, containing {hash_fields} fields (~{(hash_fields * hash_field_size) / (1024 * 1024):.2f} MB).")
 
 def slow_reader(client_id, host, port, recv_chunk_size, recv_sleep_time):
     """Simulate a slow connection using raw sockets that performs HGETALL on a large hash."""
@@ -69,13 +71,10 @@ def read_db(pool, keys, metrics):
         while True:
             try:
                 key = random.choice(keys)
-                start_time = time.time()
                 client.get(key)
-                latency = time.time() - start_time
 
                 with metrics["lock"]:
                     metrics["ops"] += 1
-                    metrics["latency"] += latency
             except redis.ConnectionError as e:
                 print(f"Client {client_id} encountered connection error: {e}")
                 break
@@ -92,10 +91,8 @@ def read_db(pool, keys, metrics):
             time.sleep(1)
             with metrics["lock"]:
                 ops = metrics["ops"]
-                avg_latency = (metrics["latency"] / ops) if ops > 0 else 0
-                print(f"Throughput: {ops} ops/sec, Average Latency: {avg_latency:.6f} sec")
+                print(f"Throughput: {ops} ops/sec")
                 metrics["ops"] = 0
-                metrics["latency"] = 0.0
     except KeyboardInterrupt:
         print("Shutting down...")
         for thread in threads:
@@ -107,11 +104,11 @@ def main():
 
     # Stage 1: Populate DB
     if not args.skip_population:
-        populate_db(pool, args.keys_count, args.data_size)
+        populate_db(pool, args.keys_count, args.data_size, args.hash_fields, args.hash_field_size)
 
     # Stage 2: Perform Reads
     keys = [f"key-{i}" for i in range(args.keys_count)]
-    metrics = {"ops": 0, "latency": 0.0, "lock": threading.Lock(), "worker_count": args.connections}
+    metrics = {"ops": 0, "lock": threading.Lock(), "worker_count": args.connections}
 
     # Start slow connections
     for i in range(args.slow_connections):
