@@ -33,7 +33,8 @@ pip install redis
 | `--slow_connections`  | Number of slow connections.                                     | 0           |
 | `--keys_count`        | Number of keys to populate during the first stage (required).  | N/A         |
 | `--skip_population`   | Skip the population stage.                                      | False       |
-| `--recv_chunk_size`   | Chunk size for socket `recv` in bytes.                         | 64          |
+| `--recv_chunk_size_min` | Minimum chunk size for socket `recv` in bytes.                 | 32          |
+| `--recv_chunk_size_max` | Maximum chunk size for socket `recv` in bytes.                 | 128         |
 | `--recv_sleep_time`   | Sleep time between socket `recv` operations in seconds.        | 1.0         |
 | `--hash_fields`       | Number of fields in the large hash.                            | 1000000     |
 | `--hash_field_size`   | Size of each field value in the large hash in bytes.           | 100         |
@@ -50,14 +51,19 @@ Skip the population stage:
 python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1000 --connections 10 --slow_connections 2 --skip_population
 ```
 
-Control slow connection parameters (chunk size and sleep time):
+Control slow connection parameters (chunk size range and sleep time):
 ```bash
-python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1000 --connections 10 --slow_connections 2 --recv_chunk_size 128 --recv_sleep_time 0.5
+python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1000 --connections 10 --slow_connections 2 --recv_chunk_size_min 64 --recv_chunk_size_max 256 --recv_sleep_time 0.5
 ```
 
 Control large hash size:
 ```bash
 python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --keys_count 1000 --connections 10 --hash_fields 500000 --hash_field_size 200
+```
+
+Best practise for controlling the tool:
+```bash
+python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --connections 100 --keys_count 1000 --data_size 1024 --hash_fields 50000 --hash_field_size 1024 --slow_connections 10 --skip_population --recv_chunk_size_min 2048 --recv_chunk_size_max 8192 --recv_sleep_time 0.01
 ```
 
 ## Functionality
