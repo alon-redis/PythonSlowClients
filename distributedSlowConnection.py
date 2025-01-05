@@ -29,8 +29,13 @@ def generate_data(size):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=size))
 
 def populate_db(pool, keys_count, data_size, hash_fields, hash_field_size, connections):
-    """Populate the database with a specified number of keys and a large hash."""
+    """Flush the database and populate it with a specified number of keys and a large hash."""
     client = redis.Redis(connection_pool=pool)
+
+    # Flush the database
+    client.flushdb()
+    print("Database flushed.")
+
     value = generate_data(data_size)
 
     for i in range(keys_count):
