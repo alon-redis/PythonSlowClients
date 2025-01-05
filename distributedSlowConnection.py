@@ -17,8 +17,8 @@ def parse_args():
     parser.add_argument('--slow_connections', type=int, default=0, help='Number of slow connections')
     parser.add_argument('--keys_count', type=int, required=True, help='Number of keys to populate during the first stage')
     parser.add_argument('--skip_population', action='store_true', help='Skip the population stage')
-    parser.add_argument('--recv_chunk_size_min', type=int, default=1, help='Minimum chunk size for socket recv in bytes')
-    parser.add_argument('--recv_chunk_size_max', type=int, default=1, help='Maximum chunk size for socket recv in bytes')
+    parser.add_argument('--recv_chunk_size_min', type=int, default=32, help='Minimum chunk size for socket recv in bytes')
+    parser.add_argument('--recv_chunk_size_max', type=int, default=128, help='Maximum chunk size for socket recv in bytes')
     parser.add_argument('--recv_sleep_time', type=float, default=1.0, help='Sleep time between socket recv operations in seconds')
     parser.add_argument('--hash_fields', type=int, default=1000000, help='Number of fields in the large hash')
     parser.add_argument('--hash_field_size', type=int, default=100, help='Size of each field value in the large hash in bytes')
@@ -28,7 +28,7 @@ def parse_args():
 def generate_data(size):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=size))
 
-def populate_db(pool, keys_count, data_size, hash_fields, hash_field_size):
+def populate_db(pool, keys_count, data_size, hash_fields, hash_field_size, connections):
     """Populate the database with a specified number of keys and a large hash."""
     client = redis.Redis(connection_pool=pool)
     value = generate_data(data_size)
@@ -51,10 +51,10 @@ def populate_db(pool, keys_count, data_size, hash_fields, hash_field_size):
 
     # Create threads to populate the hash in parallel
     threads = []
-    fields_per_thread = hash_fields // args.connections
-    for i in range(args.connections):
+    fields_per_thread = hash_fields // connections
+    for i in range(connections):
         start = i * fields_per_thread
-        end = start + fields_per_thread if i < args.connections - 1 else hash_fields
+        end = start + fields_per_thread if i < connections - 1 else hash_fields
         thread = threading.Thread(target=worker, args=(start, end))
         threads.append(thread)
         thread.start()
@@ -124,7 +124,7 @@ def main():
 
     # Stage 1: Populate DB
     if not args.skip_population:
-        populate_db(pool, args.keys_count, args.data_size, args.hash_fields, args.hash_field_size)
+        populate_db(pool, args.keys_count, args.data_size, args.hash_fields, args.hash_field_size, args.connections)
 
     # Stage 2: Perform Reads
     keys = [f"key-{i}" for i in range(args.keys_count)]
