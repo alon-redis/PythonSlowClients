@@ -5,6 +5,7 @@ import random
 import string
 import argparse
 import socket
+from tqdm import tqdm
 from redis.connection import ConnectionPool
 
 # Parse input arguments
@@ -136,9 +137,11 @@ def main():
     metrics = {"ops": 0, "lock": threading.Lock(), "worker_count": args.connections}
 
     # Start slow connections with varying recv_chunk_size
-    for i in range(args.slow_connections):
+    for i in tqdm (range(args.slow_connections), desc="Estblished Connections…"):
         thread = threading.Thread(target=slow_reader, args=(i, args.host, args.port, args.recv_chunk_size_min, args.recv_chunk_size_max, args.recv_sleep_time, args.slow_connections))
         thread.daemon = True
+        if args.slow_connections > 1000:
+            time.sleep(0.01)  # Add delay if the number of slow connections is above 1000
         thread.start()
 
     read_db(pool, keys, metrics)
