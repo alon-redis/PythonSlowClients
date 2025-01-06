@@ -1,5 +1,7 @@
 # Redis Concurrent Slow Connections Tester
 
+# distributedSlowConnection.py
+
 This repository contains a Python script to test parallel connections to a Redis server. The script includes functionalities to simulate normal and slow connections, populate the database, and measure performance metrics such as throughput and latency.
 
 ## Features
@@ -84,19 +86,11 @@ python parallel_redis_connections.py --host 127.0.0.1 --port 6379 --connections 
 
 - **Throughput**: Operations per second.
 
-## Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests.
-
-## License
-
-This project is licensed under the MIT License.
 
 
 
-
-
-
+******************************************************************************************************************************************************************************************************
+******************************************************************************************************************************************************************************************************
 ******************************************************************************************************************************************************************************************************
 ******************************************************************************************************************************************************************************************************
 
