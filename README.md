@@ -1,4 +1,4 @@
-# Redis Parallel Connections Tester
+# Redis Concurrent Slow Connections Tester
 
 This repository contains a Python script to test parallel connections to a Redis server. The script includes functionalities to simulate normal and slow connections, populate the database, and measure performance metrics such as throughput and latency.
 
@@ -17,7 +17,7 @@ This repository contains a Python script to test parallel connections to a Redis
 
 Install the required dependencies:
 ```bash
-pip install redis
+pip3 install redis tqdm
 ```
 
 ## Usage
@@ -91,4 +91,53 @@ Contributions are welcome! Feel free to open issues or submit pull requests.
 ## License
 
 This project is licensed under the MIT License.
+
+
+
+
+
+
+******************************************************************************************************************************************************************************************************
+******************************************************************************************************************************************************************************************************
+
+# differentBufferSize.py
+
+## Overview
+`differentBufferSize.py` is a Python script that interacts with a Redis server using both connection pools and sockets. It has two main stages: data population and data fetching.
+
+- **Population Stage:** Uses a Redis connection pool to populate the database with keys of varying sizes.
+- **Fetch Stage:** Opens parallel socket connections to fetch data from Redis. The fetch process simulates slow reading using delays, with a progress bar displayed via the `tqdm` package.
+
+## Usage
+```bash
+python differentBufferSize.py --redis_host <hostname> \
+                             --redis_port <port> \
+                             --num_connections <connections> \
+                             --initial_key_size <size_in_MB> \
+                             --delta <size_in_MB> \
+                             --sleep_time <seconds> \
+                             [--noflush]
+```
+
+### Parameters:
+- `--redis_host`: Redis server hostname.
+- `--redis_port`: Redis server port.
+- `--num_connections`: Number of parallel connections to use.
+- `--initial_key_size`: Initial key size in megabytes.
+- `--delta`: Incremental increase in key size per connection in megabytes.
+- `--sleep_time`: Time to sleep (in seconds) between sending commands during the fetch stage.
+- `--noflush`: Prevents flushing the Redis database before starting.
+
+## Dependencies
+- `redis`
+- `socket`
+- `argparse`
+- `tqdm`
+
+## Example
+```bash
+python3 differentBufferSize.py --redis_host redis-10000.alon-5160.env0.qa.redis.com --redis_port 10000 --num_connections 20 --sleep_time 60 --initial_key_size 10 --delta 5
+```
+
+
 
