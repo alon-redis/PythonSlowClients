@@ -1,3 +1,6 @@
+# This script populates a Redis database with large key-value pairs, simulates slow client connections, and monitors active Redis client connections.
+# It continuously checks the client list for specific conditions and opens additional connections if needed to maintain the desired number of connections.
+
 import redis
 import socket
 import argparse
