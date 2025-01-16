@@ -1,3 +1,11 @@
+#This script tests Redis server performance under load by simulating multiple slow consumers (`SlowReader`) and a publisher (`Publisher`) on a Pub/Sub channel. 
+#It allows users to configure connection counts, message sizes, and receive rates to evaluate how Redis handles slow clients and high traffic. 
+#Statistics like bytes read, messages sent, reconnections, and throughput are provided for in-depth analysis. 
+#Users can adjust parameters such as minimum/maximum bytes per second, sleep intervals, and test duration for tailored testing scenarios. 
+#The script includes robust error handling, automatic reconnections, and a graceful shutdown process for reliability and ease of use.
+#Example - python3 ./slowPubSubReconnect.py --host redis-10000.aws-alondata-12379.env0.qa.redislabs.com --port 10000 --connections 100 --min-message-size 102400 --max-message-size 204900 --duration 1800 --min-bytes-recv 102400 --max-bytes-recv 204800 --min-recv-sleep-time 1 --max-recv-sleep-time 2
+
+
 import redis
 import threading
 import time
